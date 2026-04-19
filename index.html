@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LenguaViva — 西班牙语文本分析</title>
+  <link rel="stylesheet" href="static/styles.css">
+</head>
+<body>
+
+  <header class="app-header">
+    <h1>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+      </svg>
+      LenguaViva
+      <span style="font-size:.7rem;font-weight:400;color:var(--text-muted);margin-left:.3rem">西班牙语分析</span>
+    </h1>
+    <div class="header-controls">
+      <button id="themeToggle" class="btn-icon" title="切换主题"></button>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <section class="input-section">
+      <textarea id="textInput" placeholder="在此输入或粘贴西班牙语文本…" spellcheck="false"></textarea>
+      <div class="input-actions">
+        <span id="charCount" class="char-count">0 字</span>
+        <button id="analyzeBtn" class="btn">分析</button>
+      </div>
+    </section>
+
+    <div class="tts-bar">
+      <button id="playAllBtn" class="btn-icon" title="朗读全文">
+        <svg width="22" height="22" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+      </button>
+      <div class="tts-engine-switch">
+        <span class="tts-engine-tab" data-engine="browser">浏览器语音</span>
+        <span class="tts-engine-tab" data-engine="edge" title="微软神经语音，在 Edge 浏览器中体验最佳">AI 神经语音</span>
+      </div>
+      <span id="browserVoiceBlock"><label>语音：</label><select id="browserVoiceSelect"></select></span>
+      <span id="edgeVoiceBlock" style="display:none"><label>AI语音：</label><select id="edgeVoiceSelect"></select></span>
+      <label>语速：</label>
+      <input id="speedRange" type="range" min="0.5" max="2" step="0.1" value="1">
+      <span id="speedValue" class="speed-value">1.0x</span>
+      <span id="ttsStatus" class="tts-status" style="display:none"></span>
+    </div>
+
+    <div class="display-toggles">
+      <span class="toggle-chip active" data-toggle="showLemma">词元</span>
+      <span class="toggle-chip active" data-toggle="showPos">词性</span>
+      <span class="toggle-chip active" data-toggle="showUnderline">下划线</span>
+      <span class="toggle-chip active" data-toggle="showRoles">句子成分</span>
+      <span class="toggle-chip active" data-toggle="showNotes">语法提示</span>
+      <span class="toggle-chip active" data-toggle="showTranslation">翻译</span>
+      <span class="toggle-chip active" data-toggle="showConjugation">变位</span>
+      <span class="toggle-chip active" data-toggle="showSyllable">音节</span>
+      <span class="toggle-chip active" data-toggle="showClauses">从句</span>
+      <span class="toggle-chip active" data-toggle="showPatterns">句式</span>
+      <span class="toggle-chip active" data-toggle="showWordOrder">代词·语序</span>
+      <span class="toggle-chip active" data-toggle="showCefr">难度</span>
+    </div>
+
+    <div class="pos-legend">
+      <span class="legend-item"><span class="legend-dot" style="background:var(--pos-noun)"></span>名词</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--pos-verb)"></span>动词</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--pos-adj)"></span>形容词</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--pos-adv)"></span>副词</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--pos-det)"></span>限定词</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--pos-prep)"></span>介词</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--pos-conj)"></span>连词</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--pos-pron)"></span>代词</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--pos-num)"></span>数词</span>
+    </div>
+
+    <div class="role-legend">
+      <span class="role-legend-item" style="border-color:var(--role-subj);color:var(--role-subj)">主 主语</span>
+      <span class="role-legend-item" style="border-color:var(--role-pred);color:var(--role-pred)">谓 谓语</span>
+      <span class="role-legend-item" style="border-color:var(--role-obj);color:var(--role-obj)">宾 宾语</span>
+      <span class="role-legend-item" style="border-color:var(--role-comp);color:var(--role-comp)">补 补语</span>
+      <span class="role-legend-item" style="border-color:var(--role-mod);color:var(--role-mod)">修 修饰语</span>
+      <span class="role-legend-item" style="border-color:var(--role-prep);color:var(--role-prep)">介 介词短语</span>
+      <span class="role-legend-item" style="border-color:var(--role-refl);color:var(--role-refl)">反身 反身代词</span>
+      <span class="role-legend-item" style="border-color:var(--role-aux);color:var(--role-aux)">助 助动词</span>
+    </div>
+
+    <section class="result-section">
+      <div id="resultContent">
+        <div class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 20h9M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
+          </svg>
+          <p>在上方输入西班牙语文本，点击 <strong>分析</strong> 开始</p>
+          <p style="font-size:.8rem;margin-top:.5rem;color:var(--text-muted)">快捷键 Cmd/Ctrl + Enter</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/es-compromise"></script>
+  <script src="static/segmenter.js"></script>
+  <script src="static/grammar.js"></script>
+  <script src="static/translator.js"></script>
+  <script src="static/edge-tts.js"></script>
+  <script src="static/conjugation.js"></script>
+  <script src="static/morphology.js"></script>
+  <script src="static/syllable.js"></script>
+  <script src="static/cefr.js"></script>
+  <script src="static/vocab-book.js"></script>
+  <script src="static/word-order.js"></script>
+  <script src="static/app.js"></script>
+</body>
+</html>

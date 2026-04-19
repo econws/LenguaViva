@@ -1,0 +1,5 @@
+spacy>=3.8
+flask>=3.0
+flask-cors>=6.0
+# After installing, download the Spanish model:
+# python -m spacy download es_core_news_md
